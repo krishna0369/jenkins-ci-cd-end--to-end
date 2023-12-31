@@ -5,7 +5,7 @@
 4) sonarqube
 5) nexus
 6) Docker
-7) Kubernetes
+7) Kubernetes(EKS)
 
 # Step-1 : Jenkins Server Setup in Linux VM #
 
