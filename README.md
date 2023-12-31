@@ -2,8 +2,10 @@
 1) Maven
 2) Git Hub
 3) Jenkins
-4) Docker
-5) Kubernetes
+4) sonarqube
+5) nexus
+6) Docker
+7) Kubernetes
 
 # Step-1 : Jenkins Server Setup in Linux VM #
 
@@ -165,30 +167,95 @@ kubectl version --short --client
 	$ kubectl get nodes 
 
 **Note: We should be able to see EKS cluster nodes here.**
+## Step-10 : Setup sonarqube using docker
 
-# Step - 10 : Create Jenkins CI Job #
+1) Login into AWS Cloud account
+2) Launch Linux VM using EC2 service   
+     - AMI : Amazon Linux
+     - Instance Type : t2.medium       
+4) Connect to VM using MobaXterm
 
-- **Stage-1 : Clone Git Repo** <br/> 
-- **Stage-2 : Build** <br/>
-- **Stage-3 : Create Docker Image** <br/>
-- **Stage-4 : Push Docker Image to Registry** <br/>
-- **Stage-5 : Trigger CD Job** <br/>
-	
-# Step - 11 : Create Jenkins CD Job #
+## Step-11 : Install Docker In Linux VM
 
-- **Stage-1 : Clone k8s manifestfiles** <br/>
-- **Stage-2 : Deploy app in k8s eks cluster** <br/>
-- **Stage-3 : Send confirmatin email** <br/>
+```
+sudo yum update -y 
+sudo yum install docker -y
+sudo service docker start
+sudo usermod -aG docker ec2-user
+exit
+```
+## Step-12 : Rress 'R' to restart the session (This is in MobaXterm)
 
-	
-# Step - 12 : Trigger Jenkins CI Job #
-- **CI Job will execute all the stages and it will trigger CD Job** <br/>
-- **CD Job will fetch docker image and it will deploy on cluster** <br/>
-	
-# Step - 13 : Access Application in Browser #
-- **We should be able to access our application** <br/>
-URL : http://LBR/context-path/
-	
-# We are done with our Setup #
-	
-## Step - 14 : After your practise, delete Cluster and other resources we have used in AWS Cloud to avoid billing ##
+## Step-13 :  Verify docker installation
+```
+docker -v
+```
+## Step-14 : Run SonarQube using docker image
+```
+docker run -d --name sonarqube -p 9000:9000 -p 9092:9092 sonarqube:lts-community
+```
+
+## Step-15 : Enable 9000 port number in Security Group Inbound Rules & Access Sonar Server
+```
+ - URL : http://public-ip:9000/
+```
+## Step-16 : Add SonarQube stage
+
+1) Start Sonar Server <br/>
+2) Login into Sonar Server & Generate Sonar Token  <br/>
+	Ex: cedbc0b89e45c58f4a86e4687f2df2a2241e3369 <br/>
+3) Add Sonar Token in 'Jenkins Credentials' as Secret Text <br/>
+			-> Manager Jenkins  <br/>
+			-> Credentials  <br/>
+			-> Add Credentials <br/>
+			-> Select Secret text <br/>
+			-> Enter Sonar Token as secret text  <br/>
+
+4) Install SonarQube Scanner Plugin <br/>
+-> Manage Jenkins -> Plugins -> Available -> Sonar Qube Scanner Plugin -> Install it
+
+5) Configure SonarQube Server <br/>
+-> Manage Jenkins -> Configure System -> Sonar Qube Servers -> Add Sonar Qube Server 
+		- Name : Sonar-Server-7.8
+		- Server URL : http://52.66.247.11:9000/   (Give your sonar server url here)
+		- Add Sonar Server Token
+   
+## Step-17 : Setup nexus using docker
+
+1) Login into AWS Cloud account
+2) Launch Linux VM using EC2 service   
+     - AMI : Amazon Linux
+     - Instance Type : t2.medium       
+4) Connect to VM using MobaXterm
+
+## Step-17 : Install Docker In Linux VM
+
+```
+sudo yum update -y 
+sudo yum install docker -y
+sudo service docker start
+sudo usermod -aG docker ec2-user
+exit
+```
+## Step-18 : Rress 'R' to restart the session (This is in MobaXterm)
+
+## Step-19 :  Verify docker installation
+```
+docker -v
+```
+## Step-20 : Run Nexus using docker image
+```
+docker run -d -p 8081:8081 --name nexus sonatype/nexus3
+```
+
+## Step-21: Enable 8001 port number in Security Group Inbound Rules & Access Sonar Server
+```
+ http://public-ip:8081/
+```
+
+1) Run nexus VM and create nexus repository
+2) Create Nexus Repository 
+3) Install Nexus Repository Plugin using Manage Plugins   ( Plugin Name : Nexus Artifact Uploader)
+4) Generate Nexus Pipeline Syntax
+
+
