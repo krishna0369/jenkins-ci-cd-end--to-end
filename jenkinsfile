@@ -1,0 +1,56 @@
+pipeline {
+    agent any
+      tools {
+         maven "maven-3.9.6"
+      }
+
+    stages {
+       
+        stage('git repo') {
+            steps {
+             git branch: 'main', credentialsId: 'git-credentials', url: 'https://github.com/krishna0369/jenkins-ci-cd-end--to-end.git'
+            } 
+        }
+        stage('maven build') {
+            steps {
+              sh 'mvn clean package'
+            } 
+        }
+        stage('Code Review') {
+            steps{
+                withSonarQubeEnv('sonar-9.9.3') {
+        		   sh "mvn sonar:sonar"
+        	    }
+            }
+        }
+        stage('artifact upload'){
+            steps{
+               nexusArtifactUploader artifacts: [[artifactId: 'krishna-app', classifier: '', file: 'target/amazon-app.war', type: 'war']], credentialsId: 'nexus-credentials', groupId: 'kk.krishna', nexusUrl: '100.26.178.11:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'krishna-snapshot-repo', version: '1.0-SNAPSHOT' 
+            }
+        }
+        
+        stage('docker image') {
+            steps {
+              sh 'docker build -t krishna0369/krishna-app .'
+            } 
+        }
+        stage('image push'){
+            steps{
+               withCredentials([string(credentialsId: 'docker-pwd', variable: 'dockerpwd')]) {
+          sh 'docker login -u krishna0369 -p ${dockerpwd}'
+          sh 'docker push krishna0369/krishna-app'
+} 
+            }
+        }
+        stage('k8s deployment') {
+            steps {
+              sh 'kubectl apply -f k8s-deployment.yml'
+            } 
+        }
+       
+       
+       
+       
+        
+    }
+}
