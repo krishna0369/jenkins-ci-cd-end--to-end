@@ -17,7 +17,7 @@ spec:
      app: krishna-app	 
   spec: 
     containers:
-    - name: amazonwebappcontainer
+    - name: krishnawebappcontainer
       image: krishna0369/krishna-app
       imagePullPolicy: Always
       ports:
