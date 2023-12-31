@@ -1,0 +1,37 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: krishnawebappdeployment
+spec:
+ replicas: 2
+ strategy: 
+    type: Recreate
+ selector: 
+   matchLabels: 
+     app: krishna-app
+ template:
+  metadata:
+   name: krishnawebapppod
+   labels:
+     app: krishna-app	 
+  spec: 
+    containers:
+    - name: amazonwebappcontainer
+      image: krishna0369/krishna-app
+      imagePullPolicy: Always
+      ports:
+      - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+ name: krishnawebappsvc
+spec:
+  type: LoadBalancer
+  selector:
+   app: krishna-app
+  ports:
+   - port: 80
+     targetPort: 8080
+...
